@@ -89,48 +89,50 @@ definir_horario()
 
 
 
-# ANÁLISIS DE DISPOSITIVOS REPETIDOS
-# Filtrar los datos para las MACs duplicadas
-df_duplicadas = df[df['hashed_mac'].isin(duplicadas)]
+    # ANÁLISIS DE DISPOSITIVOS REPETIDOS
+    # Filtrar los datos para las MACs duplicadas
+def definir_recorridos_duplicadas(dff,duplicadas):
+    df_duplicadas = dff[dff['hashed_mac'].isin(duplicadas)]
 
-df_duplicadas = df_duplicadas[['hashed_mac', 'fecha', 'ubicacion', 'latitud', 'longitud']]
+    df_duplicadas = df_duplicadas[['hashed_mac', 'fecha', 'ubicacion', 'latitud', 'longitud']]
 
-# DISTINTAS UBICACIONES
-# Verificar si las MACs duplicadas se encuentran en más de una ubicación
-df_duplicadas_ubicaciones = df_duplicadas.groupby('hashed_mac')['ubicacion'].nunique().reset_index()
-df_duplicadas_ubicaciones = df_duplicadas_ubicaciones[df_duplicadas_ubicaciones['ubicacion'] > 1]
+    # DISTINTAS UBICACIONES
+    # Verificar si las MACs duplicadas se encuentran en más de una ubicación
+    df_duplicadas_ubicaciones = df_duplicadas.groupby('hashed_mac')['ubicacion'].nunique().reset_index()
+    df_duplicadas_ubicaciones = df_duplicadas_ubicaciones[df_duplicadas_ubicaciones['ubicacion'] > 1]
 
-# Obtener solo las MACs duplicadas que se encontraron en distintas ubicaciones
-macs_duplicadas_distintas_ubicaciones = df_duplicadas_ubicaciones['hashed_mac'].tolist()
+    # Obtener solo las MACs duplicadas que se encontraron en distintas ubicaciones
+    macs_duplicadas_distintas_ubicaciones = df_duplicadas_ubicaciones['hashed_mac'].tolist()
 
-df_macs_duplicadas_distintas_ubicaciones = df_duplicadas[df['hashed_mac'].isin(macs_duplicadas_distintas_ubicaciones)]
+    df_macs_duplicadas_distintas_ubicaciones = df_duplicadas[dff['hashed_mac'].isin(macs_duplicadas_distintas_ubicaciones)]
 
-# DISTINTOS DÍAS
-# Verificar si las MACs duplicadas se encuentran en más de una fecha
-df_duplicadas_fecha = df_duplicadas.groupby('hashed_mac')['fecha'].nunique().reset_index()
-df_duplicadas_fecha = df_duplicadas_fecha[df_duplicadas_fecha['fecha'] > 1]
+    # DISTINTOS DÍAS
+    # Verificar si las MACs duplicadas se encuentran en más de una fecha
+    df_duplicadas_fecha = df_duplicadas.groupby('hashed_mac')['fecha'].nunique().reset_index()
+    df_duplicadas_fecha = df_duplicadas_fecha[df_duplicadas_fecha['fecha'] > 1]
 
-# Obtener solo las MACs duplicadas que se encontraron en distintas ubicaciones
-macs_duplicadas_distintas_fechas = df_duplicadas_fecha['hashed_mac'].tolist()
+    # Obtener solo las MACs duplicadas que se encontraron en distintas ubicaciones
+    macs_duplicadas_distintas_fechas = df_duplicadas_fecha['hashed_mac'].tolist()
 
-df_macs_duplicadas_distintas_fechas = df_duplicadas[df['hashed_mac'].isin(macs_duplicadas_distintas_fechas)]
+    df_macs_duplicadas_distintas_fechas = df_duplicadas[dff['hashed_mac'].isin(macs_duplicadas_distintas_fechas)]
 
-#MAPA 3
+    #MAPA 3
 
-# Crear una nueva columna 'ubicacion_siguiente' que contenga la ubicación siguiente para cada 'hashed_mac'
-df_macs_duplicadas_distintas_ubicaciones['ubicacion_siguiente'] = df_macs_duplicadas_distintas_ubicaciones.groupby('hashed_mac')['ubicacion'].shift(-1)
+    # Crear una nueva columna 'ubicacion_siguiente' que contenga la ubicación siguiente para cada 'hashed_mac'
+    df_macs_duplicadas_distintas_ubicaciones['ubicacion_siguiente'] = df_macs_duplicadas_distintas_ubicaciones.groupby('hashed_mac')['ubicacion'].shift(-1)
 
-# Crear las columnas 'latitud_siguiente' y 'longitud_siguiente'
-df_macs_duplicadas_distintas_ubicaciones['latitud_siguiente'] = df_macs_duplicadas_distintas_ubicaciones.groupby('hashed_mac')['latitud'].shift(-1)
-df_macs_duplicadas_distintas_ubicaciones['longitud_siguiente'] = df_macs_duplicadas_distintas_ubicaciones.groupby('hashed_mac')['longitud'].shift(-1)
+    # Crear las columnas 'latitud_siguiente' y 'longitud_siguiente'
+    df_macs_duplicadas_distintas_ubicaciones['latitud_siguiente'] = df_macs_duplicadas_distintas_ubicaciones.groupby('hashed_mac')['latitud'].shift(-1)
+    df_macs_duplicadas_distintas_ubicaciones['longitud_siguiente'] = df_macs_duplicadas_distintas_ubicaciones.groupby('hashed_mac')['longitud'].shift(-1)
 
-# Eliminar las filas donde 'ubicacion_siguiente', 'latitud_siguiente' o 'longitud_siguiente' son NaN
-df_macs_duplicadas_distintas_ubicaciones = df_macs_duplicadas_distintas_ubicaciones.dropna(subset=['ubicacion_siguiente', 'latitud_siguiente', 'longitud_siguiente'])
+    # Eliminar las filas donde 'ubicacion_siguiente', 'latitud_siguiente' o 'longitud_siguiente' son NaN
+    df_macs_duplicadas_distintas_ubicaciones = df_macs_duplicadas_distintas_ubicaciones.dropna(subset=['ubicacion_siguiente', 'latitud_siguiente', 'longitud_siguiente'])
 
-# Agrupar por 'ubicacion', 'ubicacion_siguiente', 'latitud', 'latitud_siguiente', 'longitud' y 'longitud_siguiente'
-# y sumar el número de 'hashed_mac' únicas
-df_recorridos = df_macs_duplicadas_distintas_ubicaciones.groupby(['ubicacion', 'ubicacion_siguiente', 'latitud', 'latitud_siguiente', 'longitud', 'longitud_siguiente'])['hashed_mac'].nunique().reset_index()
-df_recorridos.columns = ['ubicacion', 'ubicacion_siguiente', 'latitud', 'latitud_siguiente', 'longitud', 'longitud_siguiente', 'num_dispositivos']
+    # Agrupar por 'ubicacion', 'ubicacion_siguiente', 'latitud', 'latitud_siguiente', 'longitud' y 'longitud_siguiente'
+    # y sumar el número de 'hashed_mac' únicas
+    df_recorridos = df_macs_duplicadas_distintas_ubicaciones.groupby(['ubicacion', 'ubicacion_siguiente', 'latitud', 'latitud_siguiente', 'longitud', 'longitud_siguiente'])['hashed_mac'].nunique().reset_index()
+    df_recorridos.columns = ['ubicacion', 'ubicacion_siguiente', 'latitud', 'latitud_siguiente', 'longitud', 'longitud_siguiente', 'num_dispositivos']
+    return df_recorridos, df_macs_duplicadas_distintas_ubicaciones
 
 # # Crear un mapa vacío
 # mapa_3 = go.Figure()
@@ -184,6 +186,7 @@ index_page = html.Div(
                         start_date=df['fecha'].min(),
                         end_date=df['fecha'].max(),
                         display_format='YYYY-MM-DD',
+                        minimum_nights=0,
                         style={'margin': 'auto', 'grid-row': '1'}
                     ),
         
@@ -198,7 +201,7 @@ index_page = html.Div(
                     html.Div(id='duplicated-count', style={'grid-row': '3','fontSize': 20, 'background-color': '#D9E5D6', 'padding': '10px', 'borderRadius': '5px', 'textAlign': 'center', 'border': '3px solid', 'fontFamily': 'Arial','marginBottom': '50px' }),#style={'display': 'table-caption', 'marginBottom': '20px', }),
                 ]),
                 dcc.Graph(id='donut-jornada', style={'grid-column': '2', 'alignSelf': 'center', 'width': '100%', 'height': '100%'}),
-                html.Iframe(id='folium-map', width='100%', height='100%'), #style={'grid-column': '3', 'alignSelf': 'center', 'width': '100%', 'height': '100%'}),
+                html.Iframe(id='folium-map', width='95%', height='90%'), #style={'grid-column': '3', 'alignSelf': 'center', 'width': '100%', 'height': '100%'}),
 
             ]),
         html.Hr(),
@@ -232,6 +235,7 @@ data_page = html.Div(
                         start_date=df['fecha'].min(),
                         end_date=df['fecha'].max(),
                         display_format='YYYY-MM-DD',
+                        minimum_nights=0,
                         style={'margin': 'auto', 'grid-row': '1'}
                     ),
                 ])
@@ -337,6 +341,7 @@ def update_output(start_date, end_date,n_clicks):
         os.remove(mapa)
 
         mapa_recorridos = go.Figure()
+        df_recorridos, df_macs_duplicadas_distintas_ubicaciones= definir_recorridos_duplicadas(dff, duplicadas)
         for i, row in df_recorridos.iterrows():
             mapa_recorridos.add_trace(go.Scattermapbox(
                 lat=[row['latitud'], row['latitud_siguiente']],
