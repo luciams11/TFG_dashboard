@@ -212,14 +212,42 @@ index_page = html.Div(
 ])
 
 # Layout de la página de datos
-data_page = html.Div([
-    dash_table.DataTable(
-        id='table-data',
-        columns=[{"name": i, "id": i} for i in df.columns],
-        data=[],
-        page_size=10
-    ),
-    html.A('Volver a la página principal', href='/'),
+data_page = html.Div(
+    style={'height': '100vh', 'display': 'grid', 'gridTemplateRows': '10% 10% 80%'}, 
+    children=[
+        #Título
+        html.Div(
+            style={'grid-row': '1', 'display': 'flex', 'textAlign': 'center', 'justifyContent': 'center', 'color': 'white','background-color': '#0FA3B1', 'fontSize': 30, 'fontFamily': 'Arial', 'font-weight': 'bold', 'padding': '20px'},
+            children='TRABAJO FIN DE GRADO - DASHBOARD DE DISPOSITIVOS'),
+        html.Hr(),
+        #Seleccionar fechas
+        html.Div(
+            style={'grid-row': '2', 'display': 'grid', 'gridTemplateColumns': '1fr 1fr 1fr', 'gap': '10px', 'padding': '10px'},
+            children=[
+                html.Div(#style={'display': 'flex', 'justifyContent': 'space-between', 'marginBottom': '20px', 'width': '50%'}, 
+                style={'grid-column': '1', 'display': 'grid', 'gridTemplateRows': '1fr 1fr 1fr', 'gap': '10px'},
+                children=[ 
+                    dcc.DatePickerRange(
+                        id='date-picker-range',
+                        start_date=df['fecha'].min(),
+                        end_date=df['fecha'].max(),
+                        display_format='YYYY-MM-DD',
+                        style={'margin': 'auto', 'grid-row': '1'}
+                    ),
+                ])
+            ]),
+        #Tabla de datos
+        html.Div(style={'grid-row': '3', 'padding': '10px'}, 
+                 children=[
+                    dash_table.DataTable(
+                        id='table-data',
+                        columns=[{"name": i, "id": i} for i in ['hashed_mac', 'fecha', 'hora_primera', 'hora_ultima', 'latitud', 'longitud', 'ubicacion','jornada']],
+                        data=[],
+                        page_size=10,
+                        style_cell={'textAlign': 'center', 'fontFamily': 'Arial'},
+                    ),
+                    html.A('Volver a la página principal', href='/', style={'fontFamily': 'Arial'}),
+        ]),
 ])
 
 @app.callback(
