@@ -89,8 +89,8 @@ definir_horario()
 
 
 
-    # ANÁLISIS DE DISPOSITIVOS REPETIDOS
-    # Filtrar los datos para las MACs duplicadas
+# ANÁLISIS DE DISPOSITIVOS REPETIDOS
+# Filtrar los datos para las MACs duplicadas
 def definir_recorridos_duplicadas(dff,duplicadas):
     df_duplicadas = dff[dff['hashed_mac'].isin(duplicadas)]
 
@@ -134,27 +134,6 @@ def definir_recorridos_duplicadas(dff,duplicadas):
     df_recorridos.columns = ['ubicacion', 'ubicacion_siguiente', 'latitud', 'latitud_siguiente', 'longitud', 'longitud_siguiente', 'num_dispositivos']
     return df_recorridos, df_macs_duplicadas_distintas_ubicaciones
 
-# # Crear un mapa vacío
-# mapa_3 = go.Figure()
-
-# # Para cada recorrido, agregar una traza al mapa
-# for i, row in df_recorridos.iterrows():
-#     mapa_3.add_trace(go.Scattermapbox(
-#         lat=[row['latitud'], row['latitud_siguiente']],
-#         lon=[row['longitud'], row['longitud_siguiente']],
-#         mode='lines',
-#         line=dict(width=row['num_dispositivos']),  # el grosor de la línea es proporcional al número de dispositivos
-#         name=f"{row['ubicacion']} -> {row['ubicacion_siguiente']}"
-#     ))
-
-# # Configurar el layout del mapa
-# mapa_3.update_layout(
-#     mapbox_style="open-street-map",
-#     mapbox_zoom=10,
-#     mapbox_center_lat = df_macs_duplicadas_distintas_ubicaciones['latitud'].mean(),
-#     mapbox_center_lon = df_macs_duplicadas_distintas_ubicaciones['longitud'].mean(),
-#     margin={"r":0,"t":0,"l":0,"b":0}
-# )
 
 
 app = Dash(__name__, suppress_callback_exceptions=True)
@@ -162,86 +141,96 @@ app = Dash(__name__, suppress_callback_exceptions=True)
 # Layout principal
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
-    html.Div(id='page-content')
+    html.Div(    
+        #style={ 'display': 'grid',}, #'gridTemplateRows': '10% 45% 45%', 'height': '100vh',}, 
+        children=[
+            #Título
+            html.Div(
+                style={'grid-row': '1', 'display': 'flex', 'textAlign': 'center', 'justifyContent': 'center', 'color': 'white','background-color': '#0FA3B1', 'fontSize': 30, 'fontFamily': 'Arial', 'font-weight': 'bold', 'padding': '1%'},
+                children='TRABAJO FIN DE GRADO - DASHBOARD DE DISPOSITIVOS'),
+            #html.Hr(),
+            #Sección 1
+            html.Div(
+                style={'padding-top': '1%', 'padding-left': '5%', 'padding-bottom': '1%', 'width': '50%'},#'grid-row': '2', 'display': 'grid', 'gridTemplateColumns': '1fr 1fr 1fr',  },
+                children=[
+                    html.Div(#style={'display': 'flex', 'justifyContent': 'space-between', 'marginBottom': '20px', 'width': '50%'}, 
+                    #style={'grid-column': '1', 'display': 'grid', 'gridTemplateRows': '1fr 1fr 1fr', 'gap': '10px'},
+                    children=[ 
+                        dcc.DatePickerRange(
+                            id='date-picker-range',
+                            start_date=df['fecha'].min(),
+                            end_date=df['fecha'].max(),
+                            display_format='DD-MM-YYYY',
+                            minimum_nights=0,
+                            style={'margin': 'auto', 'grid-row': '1'}
+                        ),
+                    ]),
+                ]
+            ),
+        ]
+    ),
+    html.Div(id='page-content'),
 ])
 
 # Layout de la página principal
-index_page = html.Div(
-    style={'height': '100vh', 'display': 'grid', 'gridTemplateRows': '10% 45% 45%'}, 
+index_page_no_data = html.Div(
+    children=[
+        html.Div(style={'textAlign': 'center', 'fontSize': 20, 'fontFamily': 'Arial', 'font-weight':'bold','padding': '1%'},
+            children=[
+                'No hay datos para las fechas seleccionadas',
+                html.Br(),
+                'Por favor, seleccione otras fechas'
+            ]    
+        )
+    ]
+)
+
+
+index_page_with_data = html.Div(
+    style={'display': 'grid', 'height': '80vh', 'gridTemplateRows': '50% 50%'}, 
     children=[
         #Título
-        html.Div(
-            style={'grid-row': '1', 'display': 'flex', 'textAlign': 'center', 'justifyContent': 'center', 'color': 'white','background-color': '#0FA3B1', 'fontSize': 30, 'fontFamily': 'Arial', 'font-weight': 'bold', 'padding': '20px'},
-            children='TRABAJO FIN DE GRADO - DASHBOARD DE DISPOSITIVOS'),
-        html.Hr(),
+        # html.Div(
+        #     style={'grid-row': '1', 'display': 'flex', 'textAlign': 'center', 'justifyContent': 'center', 'color': 'white','background-color': '#0FA3B1', 'fontSize': 30, 'fontFamily': 'Arial', 'font-weight': 'bold', 'padding': '20px'},
+        #     children='TRABAJO FIN DE GRADO - DASHBOARD DE DISPOSITIVOS'),
+        # html.Hr(),
         #Sección 1
         html.Div(
-            style={'grid-row': '2', 'display': 'grid', 'gridTemplateColumns': '1fr 1fr 1fr', 'gap': '10px', 'padding': '10px'},
+            style={'grid-row': '1', 'display': 'grid', 'gridTemplateColumns': '1fr 1fr 1fr',}, #'gap': '10px', 'padding': '10px'},
             children=[
                 html.Div(#style={'display': 'flex', 'justifyContent': 'space-between', 'marginBottom': '20px', 'width': '50%'}, 
-                style={'grid-column': '1', 'display': 'grid', 'gridTemplateRows': '1fr 1fr 1fr', 'gap': '10px'},
+                style={'grid-column': '1', 'display': 'grid', 'gridTemplateRows': '1fr 1fr', 'padding-top': '5%', },
                 children=[ 
-                    dcc.DatePickerRange(
-                        id='date-picker-range',
-                        start_date=df['fecha'].min(),
-                        end_date=df['fecha'].max(),
-                        display_format='YYYY-MM-DD',
-                        minimum_nights=0,
-                        style={'margin': 'auto', 'grid-row': '1'}
-                    ),
-        
-                #html.Div(id='output-container-date-picker-range'),
-                    html.Div(style={'grid-row': '2', 'display': 'grid', 'gridTemplateRows': '1fr 1fr'},
+                    html.Div(style={'grid-row': '1', 'display': 'grid', 'gridTemplateRows': '1fr 1fr'},
                         children=[
-                            html.Div(id='device-count', style = {'fontSize': 20, 'background-color': '#D9E5D6', 'padding': '10px', 'borderRadius': '5px', 'textAlign': 'center', 'border': '3px solid', 'fontFamily': 'Arial'}),#style={'display': 'table-caption', 'marginBottom': '20px', }),
+                            html.Div(id='device-count', style = {'fontSize': 20, 'background-color': '#D9E5D6', 'padding-top': '4%', 'borderRadius': '5px', 'textAlign': 'center', 'border': '3px solid', 'fontFamily': 'Arial'}),#style={'display': 'table-caption', 'marginBottom': '20px', }),
                             html.A('Consultar todos los datos', id='show-data-table-link', href='/datos', n_clicks=0, style={'textAlign': 'center', 'justifyContent': 'center', 'padding-top': '10px', 'fontFamily': 'Arial'}), #style = {'grid-row': '2'}),
                         ]
                     ),
                 
-                    html.Div(id='duplicated-count', style={'grid-row': '3','fontSize': 20, 'background-color': '#D9E5D6', 'padding': '10px', 'borderRadius': '5px', 'textAlign': 'center', 'border': '3px solid', 'fontFamily': 'Arial','marginBottom': '50px' }),#style={'display': 'table-caption', 'marginBottom': '20px', }),
+                    html.Div(id='duplicated-count', style={'grid-row': '2','fontSize': 20, 'background-color': '#D9E5D6', 'padding-top': '4%', 'borderRadius': '5px', 'textAlign': 'center', 'border': '3px solid', 'fontFamily': 'Arial','marginBottom': '20%' }),#style={'display': 'table-caption', 'marginBottom': '20px', }),
                 ]),
                 dcc.Graph(id='donut-jornada', style={'grid-column': '2', 'alignSelf': 'center', 'width': '100%', 'height': '100%'}),
-                html.Iframe(id='folium-map', width='95%', height='90%'), #style={'grid-column': '3', 'alignSelf': 'center', 'width': '100%', 'height': '100%'}),
+                html.Iframe(id='folium-map', width='95%', height='95%'), #style={'grid-column': '3', 'alignSelf': 'center', 'width': '100%', 'height': '100%'}),
 
             ]),
         html.Hr(),
         #Sección 2
-        html.Div(style={'grid-row': '3', 'display': 'grid', 'gridTemplateColumns': '1fr 1fr', 'gap': '10px', 'padding': '10px'},
+        html.Div(style={'grid-row': '2', 'display': 'grid', 'gridTemplateColumns': '1fr 1fr',},
             children=[
-                dcc.Graph(id='mapa_recorridos', style={'grid-column': '1', 'width': '100%', 'height': '100%'}),  
-                dcc.Graph(id='histogram-ubicacion', style={'grid-column': '2', 'width': '100%', 'height': '100%'}),
- 
+                dcc.Graph(id='mapa_recorridos', style={'grid-column': '1', 'width': '100%', 'height': '95%'}),  
+                dcc.Graph(id='histogram-ubicacion', style={'grid-column': '2', 'width': '90%', 'height': '90%', 'padding-left': '5%'}),
+
         ])
 ])
 
 # Layout de la página de datos
 data_page = html.Div(
-    style={'height': '100vh', 'display': 'grid', 'gridTemplateRows': '10% 10% 80%'}, 
+    #style={'height': '100vh', 'display': 'grid', 'gridTemplateRows': '10% 10% 80%'},
+    style={'display':'inline'},
     children=[
-        #Título
-        html.Div(
-            style={'grid-row': '1', 'display': 'flex', 'textAlign': 'center', 'justifyContent': 'center', 'color': 'white','background-color': '#0FA3B1', 'fontSize': 30, 'fontFamily': 'Arial', 'font-weight': 'bold', 'padding': '20px'},
-            children='TRABAJO FIN DE GRADO - DASHBOARD DE DISPOSITIVOS'),
-        html.Hr(),
-        #Seleccionar fechas
-        html.Div(
-            style={'grid-row': '2', 'display': 'grid', 'gridTemplateColumns': '1fr 1fr 1fr', 'gap': '10px', 'padding': '10px'},
-            children=[
-                html.Div(#style={'display': 'flex', 'justifyContent': 'space-between', 'marginBottom': '20px', 'width': '50%'}, 
-                style={'grid-column': '1', 'display': 'grid', 'gridTemplateRows': '1fr 1fr 1fr', 'gap': '10px'},
-                children=[ 
-                    dcc.DatePickerRange(
-                        id='date-picker-range',
-                        start_date=df['fecha'].min(),
-                        end_date=df['fecha'].max(),
-                        display_format='YYYY-MM-DD',
-                        minimum_nights=0,
-                        style={'margin': 'auto', 'grid-row': '1'}
-                    ),
-                ])
-            ]),
         #Tabla de datos
-        html.Div(style={'grid-row': '3', 'padding': '10px'}, 
+        html.Div(#style={'grid-row': '3', 'padding': '10px'}, 
                  children=[
                     dash_table.DataTable(
                         id='table-data',
@@ -261,18 +250,29 @@ data_page = html.Div(
 )
 def update_table_data(start_date, end_date):
     dff = df[(df['fecha'] >= start_date) & (df['fecha'] <= end_date)]
+    dff['fecha'] = pd.to_datetime(dff['fecha']).dt.strftime('%d-%m-%Y')
+
     return dff.to_dict('records')
 
 
 # Callback para cambiar el contenido de la página según la URL
-@app.callback(Output('page-content', 'children'),
-              Input('url', 'pathname'))
-
-def display_page(pathname):
-    if pathname == '/datos':
+@app.callback(
+    Output('page-content', 'children'),
+    Input('url', 'pathname'),
+    Input('date-picker-range', 'start_date'),
+    Input('date-picker-range', 'end_date')
+)
+def display_page(pathname, start_date, end_date):
+    dff = df[(df['fecha'] >= start_date) & (df['fecha'] <= end_date)]
+    
+    if pathname == '/':
+        if dff.empty:
+            return index_page_no_data
+        else:
+            return index_page_with_data
+    elif pathname == '/datos':
         return data_page
-    else:
-        return index_page
+
 
 # Callback para actualizar gráficos y contadores
 @app.callback(
@@ -294,20 +294,19 @@ def display_page(pathname):
 def update_output(start_date, end_date,n_clicks):
     dff = df[(df['fecha'] >= start_date) & (df['fecha'] <= end_date)]
     if dff.empty:
-        return 'No hay datos para las fechas seleccionadas', '', '', '', ''
+        return ('', '', '', '', '', '')
     else:
         dff_grouped_ubicacion = dff.groupby('ubicacion').size().reset_index(name='count')
         device_count = len(dff)
         duplicadas = encontrar_mac_duplicadas(dff.to_dict('records'))
         duplicated_count = len(duplicadas)
-        
+
+        dff['fecha'] = pd.to_datetime(dff['fecha']).dt.strftime('%d-%m-%Y')
         fig_ubicacion = px.histogram(dff, x='ubicacion', y='count', color='fecha', histfunc='sum', nbins=20, title='Histograma de ubicación de los dispositivos', color_discrete_sequence=['#0FA3B1', '#FF9B42', '#EDDEA4'])
-        #fig_fecha = px.histogram(dff, x='fecha', y='count', color='ubicacion', histfunc='sum', nbins=20, title='Histograma de fecha de los dispositivos')
-        #fig_jornada = px.histogram(dff, x='jornada', y='count', color='ubicacion', histfunc='sum', nbins=20, title='Histograma de hora de los dispositivos')
         fig_ubicacion.update_layout(
             title={
                 'text': 'Histograma de ubicación de los dispositivos',
-                'font': {'size': 16},  # Cambia el tamaño del título
+                'font': {'size': 16, 'family': 'Arial'},  # Cambia el tamaño del título
                 'x': 0.5  # Opcional: Centra el título
             },
             xaxis_title={
@@ -320,20 +319,23 @@ def update_output(start_date, end_date,n_clicks):
             },
             font={
                 'size': 10  # Cambia el tamaño del resto del texto (leyendas, etiquetas, etc.)
-            }
+            },
+            legend={
+                'title': 'Fecha'
+            },
+            margin=dict(t=50, b=0, l=40, r=0)
+
         )
         fig_jornada= px.pie(dff, names='jornada', hole=0.4, title='Distribución de dispositivos por jornada', color_discrete_sequence=['#0FA3B1', '#FF9B42'])
         fig_jornada.update_layout(
             title={
                 'text': 'Distribución de dispositivos por jornada',
-                'font': {'size': 16},  # Cambia el tamaño del título
+                'font': {'size': 16, 'family': 'Arial'},  # Cambia el tamaño del título
                 'x': 0.5  # Opcional: Centra el título
             },
+            margin=dict(t=50, b=50, l=70, r=40)
         )
-        # fig_mapa_calor = px.density_mapbox(dff, lat='latitud', lon='longitud',
-        #     radius=10, center=dict(lat=dff['latitud'].mean(), lon=dff['longitud'].mean()), zoom=10,
-        #     mapbox_style="carto-positron", title='Mapa de Calor Espacial', color_continuous_scale='rainbow'
-        # )
+
         mapa = generar_mapa_calor(dff)
         with open(mapa, 'r') as f:
             folium_map_html = f.read()
