@@ -1,4 +1,6 @@
-from dash import Dash, html, dash_table, dcc, Input, Output
+from dash import Dash, html, dash_table, dcc, Input, Output, _dash_renderer
+import dash_mantine_components as dmc 
+from dash_mantine_components import MantineProvider
 import pandas as pd
 import requests
 import plotly.express as px
@@ -8,6 +10,8 @@ import folium
 from folium.plugins import HeatMap
 import os
 from tempfile import NamedTemporaryFile
+
+_dash_renderer._set_react_version("18.2.0")
 
 
 def obtener_dispositivos():
@@ -32,7 +36,6 @@ def definir_ubicaciones():
     df.loc[df['ubicacion'] == '37.175, -3.6', 'ubicacion'] = 'Plaza Bib-Rambla'
     df.loc[df['ubicacion'] == '37.177, -3.595', 'ubicacion'] = 'Plaza Santa Ana'
     df.loc[df['ubicacion'] == '37.179, -3.59', 'ubicacion'] = 'Paseo de los Tristes'
-
 
 def definir_horario():
     # Por defecto es tarde
@@ -74,19 +77,6 @@ df['hora_ultima'] = pd.to_datetime(df['hora_ultima'], format='%H:%M:%S').dt.time
 
 
 definir_horario()
-
-# df_grouped_fecha = df.groupby('fecha').size().reset_index(name='count')
-
-# df_mañana_tarde = df[df['fecha'] == '2024-05-08']
-# df_distinta_semana = df[((df['fecha'] == '2024-05-08') & (df['jornada'] == 'Tarde')) | (df['fecha'] == '2024-05-01')]
-# df_misma_semana = df[((df['fecha'] == '2024-05-01') & ((df['ubicacion'] == 'Plaza Santa Ana') | (df['ubicacion'] == 'Plaza del Carmen'))) | ((df['fecha'] == '2024-05-03') & ((df['ubicacion'] == 'Plaza Santa Ana') | (df['ubicacion'] == 'Plaza del Carmen')))]
-
-# # Crear una nueva columna que es True si 'hora_primera' y 'hora_ultima' son iguales, y False de lo contrario
-# df_misma_semana['horas_coinciden'] = df_misma_semana['hora_primera'] == df_misma_semana['hora_ultima']
-
-# # Contar cuántas veces cada valor ocurre en la nueva columna
-# conteo_horas_coinciden = df_misma_semana['horas_coinciden'].value_counts()
-
 
 
 # ANÁLISIS DE DISPOSITIVOS REPETIDOS
@@ -136,10 +126,11 @@ def definir_recorridos_duplicadas(dff,duplicadas):
 
 
 
-app = Dash(__name__, suppress_callback_exceptions=True)
+app = Dash(__name__, suppress_callback_exceptions=True, external_stylesheets=[dmc.styles.DATES])
 
 # Layout principal
-app.layout = html.Div([
+app.layout = MantineProvider(
+    children=[
     dcc.Location(id='url', refresh=False),
     html.Div(    
         #style={ 'display': 'grid',}, #'gridTemplateRows': '10% 45% 45%', 'height': '100vh',}, 
@@ -151,20 +142,19 @@ app.layout = html.Div([
             #html.Hr(),
             #Sección 1
             html.Div(
-                style={'padding-top': '1%', 'padding-left': '5%', 'padding-bottom': '1%', 'width': '50%'},#'grid-row': '2', 'display': 'grid', 'gridTemplateColumns': '1fr 1fr 1fr',  },
+                style={'padding-top': '1%', 'padding-left': '3%', 'padding-bottom': '1%', 'width': '30%'},#'grid-row': '2', 'display': 'grid', 'gridTemplateColumns': '1fr 1fr 1fr',  },
                 children=[
-                    html.Div(#style={'display': 'flex', 'justifyContent': 'space-between', 'marginBottom': '20px', 'width': '50%'}, 
-                    #style={'grid-column': '1', 'display': 'grid', 'gridTemplateRows': '1fr 1fr 1fr', 'gap': '10px'},
-                    children=[ 
-                        dcc.DatePickerRange(
-                            id='date-picker-range',
-                            start_date=df['fecha'].min(),
-                            end_date=df['fecha'].max(),
-                            display_format='DD-MM-YYYY',
-                            minimum_nights=0,
-                            style={'margin': 'auto', 'grid-row': '1'}
-                        ),
-                    ]),
+                        dmc.DatePicker(
+                            id='date-picker',
+                            value= [df['fecha'].min(), df['fecha'].max()],
+                            type='multiple',
+                            valueFormat='DD-MM-YYYY',
+                            clearable=True,
+                            allowDeselect=True,
+                            persistence_type='session',
+                            
+                        )
+                    ,
                 ]
             ),
         ]
@@ -199,7 +189,7 @@ index_page_with_data = html.Div(
             style={'grid-row': '1', 'display': 'grid', 'gridTemplateColumns': '1fr 1fr 1fr',}, #'gap': '10px', 'padding': '10px'},
             children=[
                 html.Div(#style={'display': 'flex', 'justifyContent': 'space-between', 'marginBottom': '20px', 'width': '50%'}, 
-                style={'grid-column': '1', 'display': 'grid', 'gridTemplateRows': '1fr 1fr', 'padding-top': '3%', },
+                style={'grid-column': '1', 'display': 'grid', 'gridTemplateRows': '1fr 1fr', 'padding-top': '3%', 'padding-left': '2%' },
                 children=[ 
                     html.Div(style={'grid-row': '1', 'display': 'grid', 'gridTemplateRows': '1fr 1fr', 'marginTop': '5%',},
                         children=[
@@ -208,7 +198,7 @@ index_page_with_data = html.Div(
                         ]
                     ),
                 
-                    html.Div(id='duplicated-count', style={'grid-row': '2','fontSize': 20, 'background-color': '#D9E5D6', 'padding-top': '3%', 'borderRadius': '5px', 'textAlign': 'center', 'border': '3px solid', 'fontFamily': 'Arial','marginTop': '7%', 'marginBottom': '10%' }),#style={'display': 'table-caption', 'marginBottom': '20px', }),
+                    html.Div(id='duplicated-count', style={'grid-row': '2','fontSize': 20, 'background-color': '#D9E5D6', 'padding-top': '3%', 'borderRadius': '5px', 'textAlign': 'center', 'border': '3px solid', 'fontFamily': 'Arial','marginTop': '7%', 'marginBottom': '10%'}),#style={'display': 'table-caption', 'marginBottom': '20px', }),
                 ]),
                 dcc.Graph(id='donut-jornada', style={'grid-column': '2', 'alignSelf': 'center', 'width': '100%', 'height': '100%'}),
                 html.Iframe(id='folium-map', width='95%', height='95%'), #style={'grid-column': '3', 'alignSelf': 'center', 'width': '100%', 'height': '100%'}),
@@ -218,7 +208,7 @@ index_page_with_data = html.Div(
         #Sección 2
         html.Div(style={'grid-row': '2', 'display': 'grid', 'gridTemplateColumns': '1fr 1fr',},
             children=[
-                dcc.Graph(id='mapa_recorridos', style={'grid-column': '1', 'width': '100%', 'height': '95%'}),  
+                dcc.Graph(id='mapa_recorridos', style={'grid-column': '1', 'width': '100%', 'height': '95%', 'padding-left': '1%'}),  
                 dcc.Graph(id='histogram-ubicacion', style={'grid-column': '2', 'width': '90%', 'height': '90%', 'padding-left': '5%'}),
 
         ])
@@ -226,11 +216,10 @@ index_page_with_data = html.Div(
 
 # Layout de la página de datos
 data_page = html.Div(
-    #style={'height': '100vh', 'display': 'grid', 'gridTemplateRows': '10% 10% 80%'},
     style={'display':'inline'},
     children=[
         #Tabla de datos
-        html.Div(#style={'grid-row': '3', 'padding': '10px'}, 
+        html.Div(style={'padding': '1%'}, 
                  children=[
                     dash_table.DataTable(
                         id='table-data',
@@ -245,11 +234,14 @@ data_page = html.Div(
 
 @app.callback(
     Output('table-data', 'data'),
-    Input('date-picker-range', 'start_date'),
-    Input('date-picker-range', 'end_date')
+    Input('date-picker', 'value'),
+    #Input('date-picker-range', 'end_date')
 )
-def update_table_data(start_date, end_date):
-    dff = df[(df['fecha'] >= start_date) & (df['fecha'] <= end_date)]
+def update_table_data(dates):
+    if isinstance(dates, str):
+        dates = [dates]
+
+    dff = df[df['fecha'].isin(dates)]
     dff['fecha'] = pd.to_datetime(dff['fecha']).dt.strftime('%d-%m-%Y')
 
     return dff.to_dict('records')
@@ -259,12 +251,14 @@ def update_table_data(start_date, end_date):
 @app.callback(
     Output('page-content', 'children'),
     Input('url', 'pathname'),
-    Input('date-picker-range', 'start_date'),
-    Input('date-picker-range', 'end_date')
+    Input('date-picker', 'value'),
+    #Input('date-picker-range', 'end_date')
 )
-def display_page(pathname, start_date, end_date):
-    dff = df[(df['fecha'] >= start_date) & (df['fecha'] <= end_date)]
-    
+def display_page(pathname, dates):
+    if isinstance(dates, str):
+        dates = [dates]
+
+    dff = df[df['fecha'].isin(dates)]    
     if pathname == '/':
         if dff.empty:
             return index_page_no_data
@@ -286,13 +280,16 @@ def display_page(pathname, start_date, end_date):
      #Output('mapa-calor', 'figure'),
      Output('folium-map', 'srcDoc'),
      Output('mapa_recorridos', 'figure')],
-     [Input('date-picker-range', 'start_date'),
-      Input('date-picker-range', 'end_date'),
+     [Input('date-picker', 'value'),
+      #Input('date-picker-range', 'end_date'),
       Input('show-data-table-link', 'n_clicks')]
 )
 
-def update_output(start_date, end_date,n_clicks):
-    dff = df[(df['fecha'] >= start_date) & (df['fecha'] <= end_date)]
+def update_output(dates,n_clicks):
+    if isinstance(dates, str):
+        dates = [dates]
+
+    dff = df[df['fecha'].isin(dates)]
     if dff.empty:
         return ('', '', '', '', '', '')
     else:
