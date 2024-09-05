@@ -199,16 +199,16 @@ index_page_with_data = html.Div(
             style={'grid-row': '1', 'display': 'grid', 'gridTemplateColumns': '1fr 1fr 1fr',}, #'gap': '10px', 'padding': '10px'},
             children=[
                 html.Div(#style={'display': 'flex', 'justifyContent': 'space-between', 'marginBottom': '20px', 'width': '50%'}, 
-                style={'grid-column': '1', 'display': 'grid', 'gridTemplateRows': '1fr 1fr', 'padding-top': '5%', },
+                style={'grid-column': '1', 'display': 'grid', 'gridTemplateRows': '1fr 1fr', 'padding-top': '3%', },
                 children=[ 
-                    html.Div(style={'grid-row': '1', 'display': 'grid', 'gridTemplateRows': '1fr 1fr'},
+                    html.Div(style={'grid-row': '1', 'display': 'grid', 'gridTemplateRows': '1fr 1fr', 'marginTop': '5%',},
                         children=[
-                            html.Div(id='device-count', style = {'fontSize': 20, 'background-color': '#D9E5D6', 'padding-top': '4%', 'borderRadius': '5px', 'textAlign': 'center', 'border': '3px solid', 'fontFamily': 'Arial'}),#style={'display': 'table-caption', 'marginBottom': '20px', }),
+                            html.Div(id='device-count', style = {'fontSize': 20, 'background-color': '#D9E5D6', 'padding-top': '3%', 'borderRadius': '5px', 'textAlign': 'center', 'border': '3px solid', 'fontFamily': 'Arial'}),#style={'display': 'table-caption', 'marginBottom': '20px', }),
                             html.A('Consultar todos los datos', id='show-data-table-link', href='/datos', n_clicks=0, style={'textAlign': 'center', 'justifyContent': 'center', 'padding-top': '10px', 'fontFamily': 'Arial'}), #style = {'grid-row': '2'}),
                         ]
                     ),
                 
-                    html.Div(id='duplicated-count', style={'grid-row': '2','fontSize': 20, 'background-color': '#D9E5D6', 'padding-top': '4%', 'borderRadius': '5px', 'textAlign': 'center', 'border': '3px solid', 'fontFamily': 'Arial','marginBottom': '20%' }),#style={'display': 'table-caption', 'marginBottom': '20px', }),
+                    html.Div(id='duplicated-count', style={'grid-row': '2','fontSize': 20, 'background-color': '#D9E5D6', 'padding-top': '3%', 'borderRadius': '5px', 'textAlign': 'center', 'border': '3px solid', 'fontFamily': 'Arial','marginTop': '7%', 'marginBottom': '10%' }),#style={'display': 'table-caption', 'marginBottom': '20px', }),
                 ]),
                 dcc.Graph(id='donut-jornada', style={'grid-column': '2', 'alignSelf': 'center', 'width': '100%', 'height': '100%'}),
                 html.Iframe(id='folium-map', width='95%', height='95%'), #style={'grid-column': '3', 'alignSelf': 'center', 'width': '100%', 'height': '100%'}),
