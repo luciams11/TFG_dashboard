@@ -15,7 +15,7 @@ _dash_renderer._set_react_version("18.2.0")
 
 
 def obtener_dispositivos():
-    url = "https://miserably-touched-gecko.ngrok-free.app/dispositivos/"  # Asegúrate de cambiar la URL según donde esté alojada tu API
+    url = "https://miserably-touched-gecko.ngrok-free.app/dispositivos/"  # Cambiar la URL según donde esté alojada tu API
     response = requests.get(url)
     if response.status_code == 200:
         return response.json()
@@ -49,9 +49,6 @@ def encontrar_mac_duplicadas(data):
     for dispositivo in data:
         mac = dispositivo['hashed_mac']
         if mac in macs and mac not in duplicadas:
-            #print("Duplicada:", mac)
-            #print("Longitud: ", dispositivo['longitud'])
-            #print("Latitud: ", dispositivo['latitud'])
             duplicadas.append(mac)
         else:
             macs.append(mac)
@@ -133,16 +130,14 @@ app.layout = MantineProvider(
     children=[
     dcc.Location(id='url', refresh=False),
     html.Div(    
-        #style={ 'display': 'grid',}, #'gridTemplateRows': '10% 45% 45%', 'height': '100vh',}, 
         children=[
             #Título
             html.Div(
                 style={'grid-row': '1', 'display': 'flex', 'textAlign': 'center', 'justifyContent': 'center', 'color': 'white','background-color': '#0FA3B1', 'fontSize': 30, 'fontFamily': 'Arial', 'font-weight': 'bold', 'padding': '1%'},
                 children='TRABAJO FIN DE GRADO - DASHBOARD DE DISPOSITIVOS'),
-            #html.Hr(),
-            #Sección 1
+            #Selector de fechas
             html.Div(
-                style={'padding-top': '1%', 'padding-left': '3%', 'padding-bottom': '1%', 'width': '30%'},#'grid-row': '2', 'display': 'grid', 'gridTemplateColumns': '1fr 1fr 1fr',  },
+                style={'padding-top': '1%', 'padding-left': '3%', 'padding-bottom': '1%', 'width': '30%'},
                 children=[
                         dmc.DatePicker(
                             id='date-picker',
@@ -179,29 +174,23 @@ index_page_no_data = html.Div(
 index_page_with_data = html.Div(
     style={'display': 'grid', 'height': '80vh', 'gridTemplateRows': '50% 50%'}, 
     children=[
-        #Título
-        # html.Div(
-        #     style={'grid-row': '1', 'display': 'flex', 'textAlign': 'center', 'justifyContent': 'center', 'color': 'white','background-color': '#0FA3B1', 'fontSize': 30, 'fontFamily': 'Arial', 'font-weight': 'bold', 'padding': '20px'},
-        #     children='TRABAJO FIN DE GRADO - DASHBOARD DE DISPOSITIVOS'),
-        # html.Hr(),
         #Sección 1
         html.Div(
-            style={'grid-row': '1', 'display': 'grid', 'gridTemplateColumns': '1fr 1fr 1fr',}, #'gap': '10px', 'padding': '10px'},
+            style={'grid-row': '1', 'display': 'grid', 'gridTemplateColumns': '1fr 1fr 1fr',}, 
             children=[
-                html.Div(#style={'display': 'flex', 'justifyContent': 'space-between', 'marginBottom': '20px', 'width': '50%'}, 
-                style={'grid-column': '1', 'display': 'grid', 'gridTemplateRows': '1fr 1fr', 'padding-top': '3%', 'padding-left': '2%' },
+                html.Div(style={'grid-column': '1', 'display': 'grid', 'gridTemplateRows': '1fr 1fr', 'padding-top': '3%', 'padding-left': '2%' },
                 children=[ 
                     html.Div(style={'grid-row': '1', 'display': 'grid', 'gridTemplateRows': '1fr 1fr', 'marginTop': '5%',},
                         children=[
-                            html.Div(id='device-count', style = {'fontSize': 20, 'background-color': '#D9E5D6', 'padding-top': '3%', 'borderRadius': '5px', 'textAlign': 'center', 'border': '3px solid', 'fontFamily': 'Arial'}),#style={'display': 'table-caption', 'marginBottom': '20px', }),
-                            html.A('Consultar todos los datos', id='show-data-table-link', href='/datos', n_clicks=0, style={'textAlign': 'center', 'justifyContent': 'center', 'padding-top': '10px', 'fontFamily': 'Arial'}), #style = {'grid-row': '2'}),
+                            html.Div(id='device-count', style = {'fontSize': 20, 'background-color': '#D9E5D6', 'padding-top': '3%', 'borderRadius': '5px', 'textAlign': 'center', 'border': '3px solid', 'fontFamily': 'Arial'}),
+                            html.A('Consultar todos los datos', id='show-data-table-link', href='/datos', n_clicks=0, style={'textAlign': 'center', 'justifyContent': 'center', 'padding-top': '10px', 'fontFamily': 'Arial'}), 
                         ]
                     ),
                 
-                    html.Div(id='duplicated-count', style={'grid-row': '2','fontSize': 20, 'background-color': '#D9E5D6', 'padding-top': '3%', 'borderRadius': '5px', 'textAlign': 'center', 'border': '3px solid', 'fontFamily': 'Arial','marginTop': '7%', 'marginBottom': '10%'}),#style={'display': 'table-caption', 'marginBottom': '20px', }),
+                    html.Div(id='duplicated-count', style={'grid-row': '2','fontSize': 20, 'background-color': '#D9E5D6', 'padding-top': '3%', 'borderRadius': '5px', 'textAlign': 'center', 'border': '3px solid', 'fontFamily': 'Arial','marginTop': '7%', 'marginBottom': '10%'}),
                 ]),
                 dcc.Graph(id='donut-jornada', style={'grid-column': '2', 'alignSelf': 'center', 'width': '100%', 'height': '100%'}),
-                html.Iframe(id='folium-map', width='95%', height='95%'), #style={'grid-column': '3', 'alignSelf': 'center', 'width': '100%', 'height': '100%'}),
+                html.Iframe(id='folium-map', width='95%', height='95%'), 
 
             ]),
         html.Hr(),
@@ -232,10 +221,10 @@ data_page = html.Div(
         ]),
 ])
 
+# Callback para actualizar los datos de la tabla
 @app.callback(
     Output('table-data', 'data'),
     Input('date-picker', 'value'),
-    #Input('date-picker-range', 'end_date')
 )
 def update_table_data(dates):
     if isinstance(dates, str):
@@ -252,7 +241,6 @@ def update_table_data(dates):
     Output('page-content', 'children'),
     Input('url', 'pathname'),
     Input('date-picker', 'value'),
-    #Input('date-picker-range', 'end_date')
 )
 def display_page(pathname, dates):
     if isinstance(dates, str):
@@ -270,18 +258,13 @@ def display_page(pathname, dates):
 
 # Callback para actualizar gráficos y contadores
 @app.callback(
-    [#Output('output-container-date-picker-range', 'children'),
-     #Output('table-data', 'style'),
-     #Output('table-grouped-ubicacion', 'data'),
-     Output('device-count', 'children'),
+    [Output('device-count', 'children'),
      Output('duplicated-count', 'children'),
      Output('histogram-ubicacion', 'figure'),
      Output ('donut-jornada', 'figure'),
-     #Output('mapa-calor', 'figure'),
      Output('folium-map', 'srcDoc'),
      Output('mapa_recorridos', 'figure')],
      [Input('date-picker', 'value'),
-      #Input('date-picker-range', 'end_date'),
       Input('show-data-table-link', 'n_clicks')]
 )
 
@@ -303,19 +286,19 @@ def update_output(dates,n_clicks):
         fig_ubicacion.update_layout(
             title={
                 'text': 'Histograma de ubicación de los dispositivos',
-                'font': {'size': 16, 'family': 'Arial'},  # Cambia el tamaño del título
-                'x': 0.5  # Opcional: Centra el título
+                'font': {'size': 16, 'family': 'Arial'},  
+                'x': 0.5  
             },
             xaxis_title={
                 'text': '',
-                'font': {'size': 1}  # Cambia el tamaño del título del eje X
+                'font': {'size': 1}  
             },
             yaxis_title={
                 'text': '',
-                'font': {'size': 1}  # Cambia el tamaño del título del eje Y
+                'font': {'size': 1}  
             },
             font={
-                'size': 10  # Cambia el tamaño del resto del texto (leyendas, etiquetas, etc.)
+                'size': 10  
             },
             legend={
                 'title': 'Fecha'
@@ -327,8 +310,8 @@ def update_output(dates,n_clicks):
         fig_jornada.update_layout(
             title={
                 'text': 'Distribución de dispositivos por jornada',
-                'font': {'size': 16, 'family': 'Arial'},  # Cambia el tamaño del título
-                'x': 0.5  # Opcional: Centra el título
+                'font': {'size': 16, 'family': 'Arial'},  
+                'x': 0.5  
             },
             margin=dict(t=50, b=50, l=70, r=40)
         )
@@ -356,7 +339,7 @@ def update_output(dates,n_clicks):
             mapbox_center_lon=df_macs_duplicadas_distintas_ubicaciones['longitud'].mean(),
             margin={"r":0,"t":0,"l":0,"b":0},
             font={
-                'size': 10  # Cambia el tamaño del resto del texto (leyendas, etiquetas, etc.)
+                'size': 10  
             }
         )
 
@@ -364,15 +347,11 @@ def update_output(dates,n_clicks):
         table_style = {'display': 'block'} if n_clicks else {'display': 'none'}
 
         
-        return (
-            #f'Fechas seleccionadas: {start_date} - {end_date}',
-            #dff.to_dict('records'),
-            #dff_grouped_ubicacion.to_dict('records'),        
+        return (      
             f'Dispositivos detectados:\n {device_count}',
             f'Dispositivos repetidos:\n {duplicated_count}',
             fig_ubicacion,
             fig_jornada,
-            #fig_mapa_calor
             folium_map_html,
             mapa_recorridos
         )
